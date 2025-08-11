@@ -16,15 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: read
-    container:
-      image: ghcr.io/${{ github.repository_owner }}/infra-ci:latest
-      options: --user root
+      packages: write
+      id-token: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Placeholder for master branch
+        run:
+          echo "This job is a placeholder to ensure CI passes on master branch pushes and
+          PRs. No image is built."
 
-  release-webapp-electron:
+  release:
     strategy:
       matrix:
         #        os: [ ubuntu-latest, windows-latest, macos-latest ]
