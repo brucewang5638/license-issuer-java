@@ -51,13 +51,15 @@ jobs:
           chmod +x ./gradlew
           ./gradlew jpackage
 
-      - name: Release Electron App
+      - name: Zip jpackage output
+        run: |
+          cd build
+          zip -r jpackage.zip jpackage
+
+      - name: Release
         uses: ncipollo/release-action@v1
         with:
           draft: false
           allowUpdates: true
           artifacts: |
-            build/jpackage/**/*.exe
-            build/jpackage/**/*.msi
-            build/jpackage/**/*.zip
-            build/jpackage/**/*.7z
+            build/jpackage.zip

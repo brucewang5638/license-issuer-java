@@ -43,15 +43,15 @@ jlink {
     jpackage {
         moduleName.set("com.example.licenseissuer") // 一定要跟module-info.java里 module名称一致
         mainClass.set("com.example.licenseissuer.Main") // 替换成你的主类名
-        installerType = "exe"      // Windows安装包
+//        installerType = "exe"      // Windows安装包
         installerName = "LicenseIssuerAppInstaller"
         icon = "src/main/resources/icon.ico"
-        installerOptions.addAll(
-            listOf(
-                "--win-menu",
-                "--win-shortcut",
-                "--win-dir-chooser"
-            )
-        )
+//        installerOptions.addAll(
+//            listOf(
+//                "--win-menu",
+//                "--win-shortcut",
+//                "--win-dir-chooser"
+//            )
+//        )
     }
 }
