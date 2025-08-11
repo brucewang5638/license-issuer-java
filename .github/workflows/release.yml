@@ -51,7 +51,14 @@ jobs:
           chmod +x ./gradlew
           ./gradlew jpackage
 
-      - name: Zip jpackage output
+      - name: Zip jpackage output (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path build/jpackage/* -DestinationPath build/jpackage.zip
+
+      - name: Zip jpackage output (Linux/macOS)
+        if: runner.os != 'Windows'
         run: |
           cd build
           zip -r jpackage.zip jpackage
