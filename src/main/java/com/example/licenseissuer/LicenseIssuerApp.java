@@ -1,5 +1,6 @@
 package com.example.licenseissuer;
 
+import com.example.licenseissuer.util.KeyStoreManager;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -7,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.controlsfx.control.Notifications;
@@ -17,29 +19,40 @@ import java.time.ZoneOffset;
 
 public class LicenseIssuerApp extends Application {
 
+    private Stage primaryStage;  // 保存主舞台引用
     private TextField customerNameField;
     private ComboBox<String> licenseTypeCombo;
-    private TextField machineIdField;
+    private TextField boardSerialField;
     private TextArea macsArea;
     private DatePicker startDatePicker;
     private DatePicker endDatePicker;
     private TextField serialNumberField;
+    private KeyStoreManager keyStoreManager = new KeyStoreManager();
+    private String selectedKeyId = null;
 
     private LicenseManager licenseManager = new LicenseManager();
 
     @Override
     public void start(Stage primaryStage) {
+        this.primaryStage = primaryStage;  // 保存引用
+
         primaryStage.setTitle("软件授权证书签发工具 v1.0");
 
-        // 创建主布局
         VBox mainLayout = createMainLayout();
 
-        // 创建场景
-        Scene scene = new Scene(mainLayout, 800, 600);
+        // 用 ScrollPane 包装主布局
+        ScrollPane scrollPane = new ScrollPane(mainLayout);
+
+        // 设置滚动条策略（自动出现）
+        scrollPane.setFitToWidth(true);  // 让内容宽度适应ScrollPane宽度
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); // 不显示水平滚动条
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED); // 需要时显示垂直滚动条
+
+        Scene scene = new Scene(scrollPane, 800, 600);
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
         primaryStage.setScene(scene);
-        primaryStage.setResizable(false);
+        primaryStage.setResizable(true);  // 如果你想允许调整大小的话
         primaryStage.show();
 
         // 初始化默认值
@@ -171,11 +184,11 @@ public class LicenseIssuerApp extends Application {
         grid.setPadding(new Insets(15));
 
         // 机器ID
-        Label machineLabel = new Label("机器ID:");
+        Label machineLabel = new Label("主板序列号:");
         machineLabel.getStyleClass().add("field-label");
-        machineIdField = new TextField();
-        machineIdField.setPromptText("请输入目标机器的唯一ID");
-        machineIdField.getStyleClass().add("text-field");
+        boardSerialField = new TextField();
+        boardSerialField.setPromptText("请输入服务器主板序列号");
+        boardSerialField.getStyleClass().add("text-field");
 
         // MAC地址
         Label macLabel = new Label("MAC地址:");
@@ -186,7 +199,7 @@ public class LicenseIssuerApp extends Application {
         macsArea.getStyleClass().add("text-area");
 
         grid.add(machineLabel, 0, 0);
-        grid.add(machineIdField, 1, 0);
+        grid.add(boardSerialField, 1, 0);
         grid.add(macLabel, 0, 1);
         grid.add(macsArea, 1, 1);
 
@@ -278,8 +291,8 @@ public class LicenseIssuerApp extends Application {
             errors.append("• 请输入客户名称\n");
         }
 
-        if (machineIdField.getText().trim().isEmpty()) {
-            errors.append("• 请输入机器ID\n");
+        if (boardSerialField.getText().trim().isEmpty()) {
+            errors.append("• 请输入机服务器主板序列号\n");
         }
 
         if (macsArea.getText().trim().isEmpty()) {
@@ -312,7 +325,7 @@ public class LicenseIssuerApp extends Application {
         // payload
         data.setCustomerName(customerNameField.getText().trim());
         data.setLicenseType(licenseTypeCombo.getValue());
-        data.setMachineId(machineIdField.getText().trim());
+        data.setMachineId(boardSerialField.getText().trim());
 
         // 解析MAC地址
         String[] macLines = macsArea.getText().trim().split("\n");
@@ -331,7 +344,7 @@ public class LicenseIssuerApp extends Application {
     private void clearForm() {
         customerNameField.clear();
         licenseTypeCombo.setValue("enterprise");
-        machineIdField.clear();
+        boardSerialField.clear();
         macsArea.clear();
         startDatePicker.setValue(LocalDate.now());
         endDatePicker.setValue(LocalDate.now().plusYears(1));
@@ -345,8 +358,18 @@ public class LicenseIssuerApp extends Application {
     }
 
     private void openKeyManagement() {
-        // TODO: 实现密钥管理界面
-        showInfo("功能开发中", "密钥管理功能正在开发中...");
+        KeyManagementDialog dialog = new KeyManagementDialog(keyStoreManager);
+        dialog.initOwner(primaryStage);
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.showAndWait();
+        selectedKeyId = dialog.getSelectedKeyId();
+
+        if (selectedKeyId != null) {
+            Notifications.create()
+                    .title("密钥选择成功")
+                    .text("已选中私钥：" + selectedKeyId)
+                    .showInformation();
+        }
     }
 
     private void showError(String title, String message) {

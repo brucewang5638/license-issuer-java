@@ -52,7 +52,7 @@ jlink {
             if (isWindows) {
                 add("--icon")
                 add("src/main/resources/icon.ico")
-                add("--win-console")
+//                add("--win-console")
             }
         }.toList()
 
