@@ -30,7 +30,7 @@ dependencies {
 
 application {
     mainModule.set("com.example.licenseissuer")
-    mainClass.set("com.example.licenseissuer.LicenseIssuerApp") // 把这里替换成你的主类全限定名
+    mainClass.set("com.example.licenseissuer.LicenseIssuerApp")
 }
 
 tasks.test {
@@ -44,7 +44,7 @@ jlink {
 
     imageName.set("LicenseIssuerApp")  // 自定义运行时镜像名称
     moduleName.set("com.example.licenseissuer")
-    mainClass.set("com.example.licenseissuer.Main")
+    mainClass.set("com.example.licenseissuer.LicenseIssuerApp")
 
     jpackage {
         installerName = "LicenseIssuerAppInstaller"
