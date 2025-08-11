@@ -55,13 +55,18 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Compress-Archive -Path build/jpackage/* -DestinationPath build/jpackage.zip
+          # 压缩 Portable 版本
+          Compress-Archive -Path build/jpackage/LicenseIssuerApp -DestinationPath build/LicenseIssuerApp-Portable.zip
+          Copy-Item build/jpackage/LicenseIssuerAppInstaller-1.0.0.msi build/
+          Copy-Item build/jpackage/LicenseIssuerAppInstaller-1.0.0.exe build/
 
       - name: Zip jpackage output (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
-          cd build
-          zip -r jpackage.zip jpackage
+          cd build/jpackage
+          zip -r ../LicenseIssuerApp-Portable.zip LicenseIssuerApp
+          cp LicenseIssuerAppInstaller-1.0.0.msi ../
+          cp LicenseIssuerAppInstaller-1.0.0.exe ../
 
       - name: Release
         uses: ncipollo/release-action@v1
@@ -69,4 +74,6 @@ jobs:
           draft: false
           allowUpdates: true
           artifacts: |
-            build/jpackage.zip
+            build/LicenseIssuerAppInstaller-1.0.0.msi
+            build/LicenseIssuerAppInstaller-1.0.0.exe
+            build/LicenseIssuerApp-Portable.zip
