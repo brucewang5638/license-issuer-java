@@ -25,7 +25,7 @@ dependencies {
 }
 
 application {
-    // Kotlin DSL里设置mainClass用this格式
+    mainModule.set("com.example.licenseissuer")
     mainClass.set("com.example.licenseissuer.LicenseIssuerApp") // 把这里替换成你的主类全限定名
 }
 
@@ -39,8 +39,10 @@ jlink {
         name = "LicenseIssuerApp"      // 运行时启动命令
     }
     moduleName.set("com.example.licenseissuer")  // 必须设置
+    mainClass.set("com.example.licenseissuer.Main") // 替换成你的主类名
     jpackage {
         moduleName.set("com.example.licenseissuer") // 一定要跟module-info.java里 module名称一致
+        mainClass.set("com.example.licenseissuer.Main") // 替换成你的主类名
         installerType = "exe"      // Windows安装包
         installerName = "LicenseIssuerAppInstaller"
         icon = "src/main/resources/icon.ico"
