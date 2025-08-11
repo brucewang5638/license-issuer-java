@@ -5,7 +5,6 @@ name: Release
 on:
   push:
     tags: [ "v*.*.*" ]
-    branches: [ "master" ]
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
