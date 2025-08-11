@@ -7,6 +7,10 @@ plugins {
 
 group = "org.abacusflow"
 version = "1.0.0"
+val targetOs = System.getProperty("os.name").lowercase()
+val isWindows = targetOs.contains("windows")
+val isLinux = targetOs.contains("linux")
+val isMac = targetOs.contains("mac")
 
 repositories {
     mavenCentral()
@@ -34,24 +38,41 @@ tasks.test {
 }
 
 jlink {
-    imageName.set("LicenseIssuerApp")  // 自定义运行时镜像名称
     launcher {
         name = "LicenseIssuerApp"      // 运行时启动命令
     }
-    moduleName.set("com.example.licenseissuer")  // 必须设置
-    mainClass.set("com.example.licenseissuer.Main") // 替换成你的主类名
+
+    imageName.set("LicenseIssuerApp")  // 自定义运行时镜像名称
+    moduleName.set("com.example.licenseissuer")
+    mainClass.set("com.example.licenseissuer.Main")
+
     jpackage {
-        moduleName.set("com.example.licenseissuer") // 一定要跟module-info.java里 module名称一致
-        mainClass.set("com.example.licenseissuer.Main") // 替换成你的主类名
-//        installerType = "exe"      // Windows安装包
         installerName = "LicenseIssuerAppInstaller"
-        icon = "src/main/resources/icon.ico"
-//        installerOptions.addAll(
-//            listOf(
-//                "--win-menu",
-//                "--win-shortcut",
-//                "--win-dir-chooser"
-//            )
-//        )
+        imageOptions = mutableListOf<String>().apply {
+            if (isWindows) {
+                add("--icon")
+                add("src/main/resources/icon.ico")
+            }
+        }.toList()
+
+        val options = mutableListOf<String>().apply {
+            add("--vendor")
+            add("MyCompany")
+            add("--app-version")
+            add("1.0.0")
+            add("--description")
+            add("License Issuer Application")
+
+            // 平台专属参数
+            if (isWindows) {
+                add("--win-console")
+//                add("--type")
+//                add("exe") // 或 msi
+            } else if (isLinux) {
+            } else if (isMac) {
+            }
+        }
+
+        installerOptions = options
     }
 }
