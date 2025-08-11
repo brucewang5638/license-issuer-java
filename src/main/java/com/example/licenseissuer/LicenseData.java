@@ -12,7 +12,7 @@ public class LicenseData {
     // payload
     private String customerName;
     private String licenseType;
-    private String machineId;
+    private String boardSerial;
     private List<String> macs;
 
     // Getters and Setters
@@ -34,8 +34,8 @@ public class LicenseData {
     public String getLicenseType() { return licenseType; }
     public void setLicenseType(String licenseType) { this.licenseType = licenseType; }
 
-    public String getMachineId() { return machineId; }
-    public void setMachineId(String machineId) { this.machineId = machineId; }
+    public String getBoardSerial() { return boardSerial; }
+    public void setBoardSerial(String boardSerial) { this.boardSerial = boardSerial; }
 
     public List<String> getMacs() { return macs; }
     public void setMacs(List<String> macs) { this.macs = macs; }

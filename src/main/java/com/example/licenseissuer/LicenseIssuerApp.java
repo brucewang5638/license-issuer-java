@@ -27,10 +27,10 @@ public class LicenseIssuerApp extends Application {
     private DatePicker startDatePicker;
     private DatePicker endDatePicker;
     private TextField serialNumberField;
-    private KeyStoreManager keyStoreManager = new KeyStoreManager();
+    private final KeyStoreManager keyStoreManager = new KeyStoreManager();
     private String selectedKeyId = null;
 
-    private LicenseManager licenseManager = new LicenseManager();
+    private final LicenseManager licenseManager = new LicenseManager(keyStoreManager);
 
     @Override
     public void start(Stage primaryStage) {
@@ -315,9 +315,11 @@ public class LicenseIssuerApp extends Application {
 
     private LicenseData createLicenseData() {
         LicenseData data = new LicenseData();
-
+        if(selectedKeyId ==null){
+            throw new IllegalStateException("请从密钥管理中选择一个密钥！");
+        }
         // metadata
-        data.setKid("key-2025-01");
+        data.setKid(selectedKeyId);
         data.setNotBefore(startDatePicker.getValue().atStartOfDay().toEpochSecond(ZoneOffset.UTC));
         data.setNotAfter(endDatePicker.getValue().atStartOfDay().toEpochSecond(ZoneOffset.UTC));
         data.setSerialNumber(serialNumberField.getText().trim());
@@ -325,7 +327,7 @@ public class LicenseIssuerApp extends Application {
         // payload
         data.setCustomerName(customerNameField.getText().trim());
         data.setLicenseType(licenseTypeCombo.getValue());
-        data.setMachineId(boardSerialField.getText().trim());
+        data.setBoardSerial(boardSerialField.getText().trim());
 
         // 解析MAC地址
         String[] macLines = macsArea.getText().trim().split("\n");

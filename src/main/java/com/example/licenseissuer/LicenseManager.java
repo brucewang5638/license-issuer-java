@@ -1,27 +1,38 @@
 package com.example.licenseissuer;
 
+import com.example.licenseissuer.util.KeyStoreManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class LicenseManager {
     private static final String ALGORITHM = "RSA";
     private static final String SIGNATURE_ALGORITHM = "SHA256withRSA";
     private static final String PRIVATE_KEY_FILE = "private_key.pem";
+    private final KeyStoreManager keyStoreManager;
+
+    public LicenseManager(KeyStoreManager keyStoreManager) {
+        this.keyStoreManager = keyStoreManager;
+    }
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public void generateLicense(com.example.licenseissuer.LicenseData data, File outputFile) throws Exception {
+    public void generateLicense(LicenseData data, File outputFile) throws Exception {
         // 获取私钥
-        PrivateKey privateKey = getPrivateKey();
+        PrivateKey privateKey = keyStoreManager.getPrivateKey(data.getKid());
+        if (privateKey == null) {
+            throw new IllegalStateException("无法从密钥库中找到 kid=" + data.getKid() + " 对应的私钥");
+        }
 
         // 创建证书JSON结构
         Map<String, Object> certificate = new HashMap<>();
@@ -32,24 +43,37 @@ public class LicenseManager {
         metadata.put("notBefore", data.getNotBefore());
         metadata.put("notAfter", data.getNotAfter());
         metadata.put("serialNumber", data.getSerialNumber());
-        certificate.put("metadata", metadata);
 
         // payload
         Map<String, Object> payload = new HashMap<>();
         payload.put("customerName", data.getCustomerName());
         payload.put("licenseType", data.getLicenseType());
-        payload.put("machineId", data.getMachineId());
+        payload.put("machineId", data.getBoardSerial());
         payload.put("macs", data.getMacs());
-        certificate.put("payload", payload);
 
-        // 对payload进行签名
-        String payloadJson = gson.toJson(payload);
-        String signature = signData(payloadJson, privateKey);
-        certificate.put("signature", signature);
+        Map<String, Object> fullData = new LinkedHashMap<>();
+        fullData.put("metadata", metadata);
+        fullData.put("payload", payload);
 
-        // 保存证书文件
+        // 转成 JSON 并 Base64 编码
+        String jsonData = gson.toJson(fullData);
+        String base64Data = Base64.getEncoder().encodeToString(jsonData.getBytes(StandardCharsets.UTF_8));
+
+        // 签名
+        Signature sig = Signature.getInstance("SHA256withRSA");
+        sig.initSign(privateKey);
+        sig.update(base64Data.getBytes(StandardCharsets.UTF_8));
+        String signature = Base64.getEncoder().encodeToString(sig.sign());
+
+        // 最终 license 文件结构
+        Map<String, Object> licenseFile = new HashMap<>();
+        licenseFile.put("kid", data.getKid());
+        licenseFile.put("data", base64Data);
+        licenseFile.put("signature", signature);
+
+        // 保存
         try (FileWriter writer = new FileWriter(outputFile)) {
-            gson.toJson(certificate, writer);
+            gson.toJson(licenseFile, writer);
         }
     }
 
