@@ -52,6 +52,7 @@ jlink {
             if (isWindows) {
                 add("--icon")
                 add("src/main/resources/icon.ico")
+                add("--win-console")
             }
         }.toList()
 
@@ -65,9 +66,6 @@ jlink {
 
             // 平台专属参数
             if (isWindows) {
-                add("--win-console")
-//                add("--type")
-//                add("exe") // 或 msi
             } else if (isLinux) {
             } else if (isMac) {
             }
