@@ -2,6 +2,7 @@ plugins {
     java
     application
     id("org.openjfx.javafxplugin") version "0.0.14" // 推荐使用官方JavaFX插件简化配置
+    id("org.beryx.jlink") version "2.26.0"
 }
 
 group = "org.abacusflow"
@@ -30,4 +31,24 @@ application {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+jlink {
+    imageName.set("LicenseIssuerApp")  // 自定义运行时镜像名称
+    launcher {
+        name = "LicenseIssuerApp"      // 运行时启动命令
+    }
+    jpackage {
+        moduleName.set("com.example.licenseissuer") // 一定要跟module-info.java里 module名称一致
+        installerType = "exe"      // Windows安装包
+        installerName = "LicenseIssuerAppInstaller"
+        icon = "src/main/resources/icon.ico"
+        installerOptions.addAll(
+            listOf(
+                "--win-menu",
+                "--win-shortcut",
+                "--win-dir-chooser"
+            )
+        )
+    }
 }

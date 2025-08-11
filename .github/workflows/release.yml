@@ -1,0 +1,56 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Release
+
+on:
+  push:
+    tags: [ "v*.*.*" ]
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/infra-ci:latest
+      options: --user root
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+  release-webapp-electron:
+    strategy:
+      matrix:
+        #        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ windows-latest ]
+    runs-on: ${{ matrix.os }}
+    needs: build
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Gradle build
+        run: |
+          chmod +x ./gradlew
+          ./gradlew jpackage
+
+      - name: Release Electron App
+        uses: ncipollo/release-action@v1
+        with:
+          draft: false
+          allowUpdates: true
+          artifacts: |
+            build/jpackage/**/*.exe
+            build/jpackage/**/*.msi
+            build/jpackage/**/*.zip
+            build/jpackage/**/*.7z
