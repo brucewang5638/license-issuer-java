@@ -38,6 +38,7 @@ jlink {
     launcher {
         name = "LicenseIssuerApp"      // 运行时启动命令
     }
+    moduleName = "com.example.licenseissuer"   // 这里要确认是否写了正确的模块名
     jpackage {
         moduleName.set("com.example.licenseissuer") // 一定要跟module-info.java里 module名称一致
         installerType = "exe"      // Windows安装包
